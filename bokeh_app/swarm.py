@@ -1,7 +1,7 @@
 from bokeh.io import curdoc
 from bokeh.plotting import figure, ColumnDataSource
 from time import sleep, time
-from bokeh.models import Div
+from bokeh.models import Div, TextInput, Slider
 from bokeh.layouts import column
 import swarming
 from tornado import gen
@@ -10,15 +10,6 @@ doc = curdoc()
 args = doc.session_context.request.arguments
 
 ts = .2
-try:
-    if args.get("n"):
-        n_particles = int(args.get("n")[0])
-    else:
-        n_particles = 200
-
-except ValueError as e:
-    print("Strange value: {}".format(args.get("n")))
-    n_particles = 200
 
 
 ini = swarming.InitialCondition(n_particles=n_particles)
