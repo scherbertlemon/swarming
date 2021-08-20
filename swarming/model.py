@@ -227,7 +227,7 @@ class InitialCondition(Model):
         return X, np.zeros(V.shape)
 
     @property
-    def random_speed(self):
+    def randomspeed(self):
         X, V = self.square
         return X, 10. * (rand(*V.shape)-0.5)
 
@@ -236,7 +236,7 @@ class InitialCondition(Model):
 
     def plot_initial(self, ncols=3, attrs=None, plot_width=300, plot_height=300):
         if attrs is None:
-            attrs = ["circular", "square", "nospeed", "random_speed"]
+            attrs = ["circular", "square", "nospeed", "randomspeed"]
 
         cds = [
             ColumnDataSource(

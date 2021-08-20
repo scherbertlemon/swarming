@@ -2,3 +2,4 @@
 *.egg-info
 .vscode
 .ipynb_checkpoints
+dask-worker-space
