@@ -7,3 +7,4 @@ dask-worker-space
 *.kra
 *.*~
 mydask.png
+documentation/_build
