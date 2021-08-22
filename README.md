@@ -1,5 +1,7 @@
 # Simulation package for interacting particle systems
 
+Have a look at the [documentation](https://scherbertlemon.github.io/swarming/) for details on the content.
+
 ## Setup
 
 Provide a python environment with ``python > 3.7``, then run in the cloned repository folder:
