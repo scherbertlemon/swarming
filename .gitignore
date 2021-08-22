@@ -6,3 +6,4 @@ dask-worker-space
 *.parq
 *.kra
 *.*~
+mydask.png
