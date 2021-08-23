@@ -8,3 +8,5 @@ dask
 distributed
 pydoe
 pyarrow
+graphviz
+python-graphviz

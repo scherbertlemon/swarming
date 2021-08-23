@@ -439,71 +439,98 @@ system.</p>
 <dt class="sig sig-object py" id="swarming.model.InitialCondition">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">swarming.model.</span></span><span class="sig-name descname"><span class="pre">InitialCondition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">condition</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'circular'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_particles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-</span> <span class="pre">40,</span> <span class="pre">40)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-</span> <span class="pre">40,</span> <span class="pre">40)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.InitialCondition" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#swarming.model.Model" title="swarming.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">swarming.model.Model</span></code></a></p>
+<p>Subclass to prepare a system of interacting particles in a defined initial
+state or to reset it to one.
+Is based on <a class="reference internal" href="#swarming.model.Model" title="swarming.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">swarming.model.Model</span></code></a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes</dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>cds</strong></dt><dd></dd>
-<dt><strong>circular</strong></dt><dd></dd>
-<dt><strong>distx</strong></dt><dd></dd>
-<dt><strong>disty</strong></dt><dd></dd>
-<dt><strong>history</strong></dt><dd></dd>
-<dt><strong>mean_v</strong></dt><dd></dd>
-<dt><strong>mean_x</strong></dt><dd></dd>
-<dt><strong>n_particles</strong></dt><dd></dd>
-<dt><strong>nospeed</strong></dt><dd></dd>
-<dt><strong>randomspeed</strong></dt><dd></dd>
-<dt><strong>square</strong></dt><dd></dd>
+<dt><strong>condition: str</strong></dt><dd><p>name of the initial condition to create. Must be a property name of
+this class</p>
+</dd>
+<dt><strong>n_particles: int</strong></dt><dd><p>number of particles to generate</p>
+</dd>
+<dt><strong>x_range: tuple</strong></dt><dd><p>x range where to distribute particles</p>
+</dd>
+<dt><strong>y_range: tuple</strong></dt><dd><p>y range where to distribute particles</p>
+</dd>
+<dt><strong>rhs: function</strong></dt><dd><p>function reference for right hand side for system, see
+<a class="reference internal" href="#swarming.model.Model" title="swarming.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">swarming.model.Model</span></code></a>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>n: int</strong></dt><dd><p>given number of particles. Is effective when setting initial condition</p>
+</dd>
+<dt><strong>xr: tuple</strong></dt><dd><p>x range where to distribute particles</p>
+</dd>
+<dt><strong>yr: tuple</strong></dt><dd><p>y range where to distribute particles</p>
+</dd>
+<dt><strong>distx: float</strong></dt><dd><p>length of x range</p>
+</dd>
+<dt><strong>disty: float</strong></dt><dd><p>length of y range</p>
+</dd>
+<dt><strong>circular: tuple of np.array</strong></dt><dd><p>positions and velocities of a donut-shaped distribution of particles</p>
+</dd>
+<dt><strong>square: tuple of np.array</strong></dt><dd><p>positions and velocities of a square-shaped distribution of particles,
+all velocities aligned into one direction</p>
+</dd>
+<dt><strong>randomspeed: tuple of np.array</strong></dt><dd><p>like “square” with random velocity vectors</p>
+</dd>
+<dt><strong>nospeed: tuple of np.array</strong></dt><dd><p>like “square”, with zero velocity vectors</p>
+</dd>
 </dl>
 </dd>
 </dl>
 <p class="rubric">Methods</p>
-<table class="docutils align-default">
+<table class="longtable docutils align-default">
 <colgroup>
-<col style="width: 71%" />
-<col style="width: 29%" />
+<col style="width: 10%" />
+<col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><strong>add_history</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_history</span></code>()</p></td>
+<td><p>Appends current simulation time, positions, velocities and mean positions and velocities into system history.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>calc_chg_from_history</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_chg_from_history</span></code>([lookback])</p></td>
+<td><p>For the recorded mean positions and velocities, calculate modulus of discrete change rates over time.</p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>cds_dict</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cds_dict</span></code>()</p></td>
+<td><p>Creates a data dictionary to insert into ColumnDataSource for current system state.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>cds_static</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cds_static</span></code>(X, V[, vscale])</p></td>
+<td><p>For given positions and velocities, create a dictionary that can be inserted into a bokeh <code class="docutils literal notranslate"><span class="pre">ColumnDataSource</span></code>, providing data for plotting particle positions, as well as velocity vectors for a kind of quiver plot.</p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>evolve</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evolve</span></code>(time_step, n_steps[, snapshot])</p></td>
+<td><p>Get parameters for right hand side, get a right hand side for this parameter set and calculate a certain amount of time steps with it.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>plot</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code>([plot_width, plot_height, plot_mean])</p></td>
+<td><p>Plot all particles with velocity vectors from current system state.</p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>plot_density</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_density</span></code>([plot_width, plot_height, …])</p></td>
+<td><p>Plot particle density from current system state.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>plot_initial</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#swarming.model.InitialCondition.plot_initial" title="swarming.model.InitialCondition.plot_initial"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_initial</span></code></a>([ncols, attrs, plot_width, …])</p></td>
+<td><p>Plot all registered initial conditions as an example.</p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>plot_trajectory</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_trajectory</span></code>([plot_width, plot_height])</p></td>
+<td><p>Plots the trajectory of the mean position and mean velocity of the whole system over time, recorded so far-</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>record_for_time</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">record_for_time</span></code>(max_time, time_step, …)</p></td>
+<td><p>Wrapper for <a class="reference internal" href="#swarming.model.Model.evolve" title="swarming.model.Model.evolve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">swarming.model.Model.evolve()</span></code></a> to run batches of timesteps, until a certain maximum simulation time is reached, recording intermediate states into system history.</p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>record_until</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">record_until</span></code>(max_steps, time_step, n_steps)</p></td>
+<td><p>Wrapper for <a class="reference internal" href="#swarming.model.Model.evolve" title="swarming.model.Model.evolve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">swarming.model.Model.evolve()</span></code></a> to run batches of timesteps, until a maximum number of time steps has been reached, recording intermediate states into system history.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>set_initial</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#swarming.model.InitialCondition.set_initial" title="swarming.model.InitialCondition.set_initial"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_initial</span></code></a>([condition])</p></td>
+<td><p>Prepare system in defined condition.</p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>step</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">step</span></code>(time_step[, noise])</p></td>
+<td><p>Computes one time step with explicit Runge-Kutta method of 2nd order.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>update_cds</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_cds</span></code>()</p></td>
+<td><p>Replaces the data dict of ColumnDataSource <code class="docutils literal notranslate"><span class="pre">self.cds</span></code> with current velocities and positions.</p></td>
 </tr>
 </tbody>
 </table>
@@ -530,7 +557,30 @@ system.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="swarming.model.InitialCondition.plot_initial">
 <span class="sig-name descname"><span class="pre">plot_initial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ncols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.InitialCondition.plot_initial" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Plot all registered initial conditions as an example. Does not change
+system state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ncols: int</strong></dt><dd><p>number of columsn for grid plot of initial conditions</p>
+</dd>
+<dt><strong>attrs: list of str</strong></dt><dd><p>list of names of initial conditions to plot. All conditions are 
+lotted by default.</p>
+</dd>
+<dt><strong>plot_width: int</strong></dt><dd><p>plot width for each subfigure in pixels</p>
+</dd>
+<dt><strong>plot_height: int</strong></dt><dd><p>plot height for each subfigure in pixels</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>bokeh.layouts.grid</dt><dd><p>grid of figures containing selected initial conditions.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="swarming.model.InitialCondition.randomspeed">
@@ -540,7 +590,17 @@ system.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="swarming.model.InitialCondition.set_initial">
 <span class="sig-name descname"><span class="pre">set_initial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">condition</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'circular'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.InitialCondition.set_initial" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Prepare system in defined condition. Resets particle positions and
+velocities imminently.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><a class="reference internal" href="#swarming.model.Model" title="swarming.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">swarming.model.Model</span></code></a></dt><dd><p>reference to class instance to allow for command chaining.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="swarming.model.InitialCondition.square">
@@ -553,71 +613,149 @@ system.</p>
 <dt class="sig sig-object py" id="swarming.model.Model">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">swarming.model.</span></span><span class="sig-name descname"><span class="pre">Model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.Model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for simulating a system of potentially interacting particles,
+as a system of ordinary differential equations in terms of particle
+positions <code class="docutils literal notranslate"><span class="pre">X</span></code> and velocities <code class="docutils literal notranslate"><span class="pre">V</span></code>. The system behavior is mainly
+determined by the choice of the right hand side, which can be
+parameterized with coefficients, and which is applied to positions and
+velocities in every time step. There is further functionality to plot
+current model states with bokeh, and to record the complete trajectories
+of particles in the phase space.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes</dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>cds</strong></dt><dd></dd>
-<dt><strong>history</strong></dt><dd></dd>
-<dt><strong>mean_v</strong></dt><dd></dd>
-<dt><strong>mean_x</strong></dt><dd></dd>
-<dt><strong>n_particles</strong></dt><dd></dd>
+<dt><strong>X: numpy.array</strong></dt><dd><p><code class="docutils literal notranslate"><span class="pre">n</span></code> by 2 array containing in each “row” the 2d positions of one of
+the <code class="docutils literal notranslate"><span class="pre">n</span></code> particles to simulate. Can be an initial distribution or an
+intermediate state. See also
+<a class="reference internal" href="#swarming.model.InitialCondition" title="swarming.model.InitialCondition"><code class="xref py py-class docutils literal notranslate"><span class="pre">swarming.model.InitialCondition</span></code></a></p>
+</dd>
+<dt><strong>V: numpy.array</strong></dt><dd><p><code class="docutils literal notranslate"><span class="pre">n</span></code> by 2 array containing in each “row” the 2d velocity vector of
+one of the <code class="docutils literal notranslate"><span class="pre">n</span></code> particles to simulate.</p>
+</dd>
+<dt><strong>rhs: function</strong></dt><dd><p>function returning a reference to a parameterized right hand side to
+be evaluated in every timestep for positions and velocities.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>X: numpy.array</strong></dt><dd><p><code class="docutils literal notranslate"><span class="pre">n</span></code> by 2 array containing in each “row” the current 2d positions of
+one of the <code class="docutils literal notranslate"><span class="pre">n</span></code> particles in the system</p>
+</dd>
+<dt><strong>V: numpy.array</strong></dt><dd><p><code class="docutils literal notranslate"><span class="pre">n</span></code> by 2 array containing in each “row” the current 2d velocity
+vectors of one of the <code class="docutils literal notranslate"><span class="pre">n</span></code> particles in the system</p>
+</dd>
+<dt><strong>time: float</strong></dt><dd><p>current simulation time until which the model has been run since
+instantiation.</p>
+</dd>
+<dt><strong>rhs: function</strong></dt><dd><p>function returning a reference to a parameterized right hand side to
+be evaluated in every timestep for positions and velocities. Can be
+changed during system evolution to modify parameters</p>
+</dd>
+<dt><strong>apply_rhs: function</strong></dt><dd><p>the return of <code class="docutils literal notranslate"><span class="pre">rhs</span></code> called with a set of parameters, to be applied
+to particles and velocities in the simulation</p>
+</dd>
+<dt><strong>VSCALE: float</strong></dt><dd><p>factor by which velocity vecotrs are stretched for visualization only.</p>
+</dd>
+<dt><strong>mean_x: numpy.array</strong></dt><dd><p>2 array always containing the mean position of all particles at
+current timestamp.</p>
+</dd>
+<dt><strong>mean_v: numpy.array</strong></dt><dd><p>2 array always containing the mean velocity of all particles at
+current timestamp.</p>
+</dd>
+<dt><strong>cds: bokeh.ColumnDataSource</strong></dt><dd><p>reference to column data source that is used for plotting system state.
+Can be updated with current simulated data by calling
+<a class="reference internal" href="#swarming.model.Model.update_cds" title="swarming.model.Model.update_cds"><code class="xref py py-meth docutils literal notranslate"><span class="pre">swarming.model.Model.update_cds()</span></code></a>. Helpful for updating bokeh
+plots that use this data source, e.g. in an interactive Bokeh app.</p>
+</dd>
+<dt><strong>history: pandas.DataFrame</strong></dt><dd><p>contains particle positions, velocities, mean position and velocity of
+all particles at certain time steps, that are determined in
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">swarming.model.record_for_time()</span></code> or
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">swarming.model.record_until()</span></code>.</p>
+</dd>
+<dt><strong>n_particles: int</strong></dt><dd><p>amount of particles, i.e. number of rows of <code class="docutils literal notranslate"><span class="pre">X</span></code>: <code class="docutils literal notranslate"><span class="pre">self.X.shape[0]</span></code></p>
+</dd>
 </dl>
 </dd>
 </dl>
 <p class="rubric">Methods</p>
-<table class="docutils align-default">
+<table class="longtable docutils align-default">
 <colgroup>
-<col style="width: 71%" />
-<col style="width: 29%" />
+<col style="width: 10%" />
+<col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><strong>add_history</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#swarming.model.Model.add_history" title="swarming.model.Model.add_history"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_history</span></code></a>()</p></td>
+<td><p>Appends current simulation time, positions, velocities and mean positions and velocities into system history.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>calc_chg_from_history</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#swarming.model.Model.calc_chg_from_history" title="swarming.model.Model.calc_chg_from_history"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_chg_from_history</span></code></a>([lookback])</p></td>
+<td><p>For the recorded mean positions and velocities, calculate modulus of discrete change rates over time.</p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>cds_dict</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#swarming.model.Model.cds_dict" title="swarming.model.Model.cds_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cds_dict</span></code></a>()</p></td>
+<td><p>Creates a data dictionary to insert into ColumnDataSource for current system state.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>cds_static</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#swarming.model.Model.cds_static" title="swarming.model.Model.cds_static"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cds_static</span></code></a>(X, V[, vscale])</p></td>
+<td><p>For given positions and velocities, create a dictionary that can be inserted into a bokeh <code class="docutils literal notranslate"><span class="pre">ColumnDataSource</span></code>, providing data for plotting particle positions, as well as velocity vectors for a kind of quiver plot.</p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>evolve</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#swarming.model.Model.evolve" title="swarming.model.Model.evolve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evolve</span></code></a>(time_step, n_steps[, snapshot])</p></td>
+<td><p>Get parameters for right hand side, get a right hand side for this parameter set and calculate a certain amount of time steps with it.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>plot</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#swarming.model.Model.plot" title="swarming.model.Model.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>([plot_width, plot_height, plot_mean])</p></td>
+<td><p>Plot all particles with velocity vectors from current system state.</p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>plot_density</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#swarming.model.Model.plot_density" title="swarming.model.Model.plot_density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_density</span></code></a>([plot_width, plot_height, …])</p></td>
+<td><p>Plot particle density from current system state.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>plot_trajectory</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#swarming.model.Model.plot_trajectory" title="swarming.model.Model.plot_trajectory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_trajectory</span></code></a>([plot_width, plot_height])</p></td>
+<td><p>Plots the trajectory of the mean position and mean velocity of the whole system over time, recorded so far-</p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>record_for_time</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#swarming.model.Model.record_for_time" title="swarming.model.Model.record_for_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">record_for_time</span></code></a>(max_time, time_step, …)</p></td>
+<td><p>Wrapper for <a class="reference internal" href="#swarming.model.Model.evolve" title="swarming.model.Model.evolve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">swarming.model.Model.evolve()</span></code></a> to run batches of timesteps, until a certain maximum simulation time is reached, recording intermediate states into system history.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>record_until</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#swarming.model.Model.record_until" title="swarming.model.Model.record_until"><code class="xref py py-obj docutils literal notranslate"><span class="pre">record_until</span></code></a>(max_steps, time_step, n_steps)</p></td>
+<td><p>Wrapper for <a class="reference internal" href="#swarming.model.Model.evolve" title="swarming.model.Model.evolve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">swarming.model.Model.evolve()</span></code></a> to run batches of timesteps, until a maximum number of time steps has been reached, recording intermediate states into system history.</p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>step</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#swarming.model.Model.step" title="swarming.model.Model.step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">step</span></code></a>(time_step[, noise])</p></td>
+<td><p>Computes one time step with explicit Runge-Kutta method of 2nd order.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>update_cds</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#swarming.model.Model.update_cds" title="swarming.model.Model.update_cds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_cds</span></code></a>()</p></td>
+<td><p>Replaces the data dict of ColumnDataSource <code class="docutils literal notranslate"><span class="pre">self.cds</span></code> with current velocities and positions.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="swarming.model.Model.add_history">
 <span class="sig-name descname"><span class="pre">add_history</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.Model.add_history" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Appends current simulation time, positions, velocities and mean
+positions and velocities into system history.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="swarming.model.Model.calc_chg_from_history">
 <span class="sig-name descname"><span class="pre">calc_chg_from_history</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lookback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.Model.calc_chg_from_history" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>For the recorded mean positions and velocities, calculate modulus of
+discrete change rates over time. Corresponds to modulus of discrete
+first derivatives of <code class="docutils literal notranslate"><span class="pre">mean_x</span></code>, <code class="docutils literal notranslate"><span class="pre">mean_v</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lookback: int</strong></dt><dd><p>Maximum amount of time points from history to take into account. If not
+given, use all.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>chgx: numpy.array</dt><dd><p><code class="docutils literal notranslate"><span class="pre">lookback</span></code> sized array of mean position change rates</p>
+</dd>
+<dt>chgv: numpy.array</dt><dd><p><code class="docutils literal notranslate"><span class="pre">lookback</span></code> sized array of mean velocity change rates</p>
+</dd>
+<dt>time: numpy.array</dt><dd><p>the timepoints for which change rates where calculated</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="swarming.model.Model.cds">
@@ -627,17 +765,77 @@ system.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="swarming.model.Model.cds_dict">
 <span class="sig-name descname"><span class="pre">cds_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.Model.cds_dict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Creates a data dictionary to insert into ColumnDataSource for current system state.
+See also <a class="reference internal" href="#swarming.model.Model.cds_static" title="swarming.model.Model.cds_static"><code class="xref py py-meth docutils literal notranslate"><span class="pre">swarming.model.Model.cds_static()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>dict</dt><dd><p>containing data for ColumnDataSource</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="swarming.model.Model.cds_static">
 <em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">cds_static</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.Model.cds_static" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>For given positions and velocities, create a dictionary that can be
+inserted into a bokeh <code class="docutils literal notranslate"><span class="pre">ColumnDataSource</span></code>, providing data for
+plotting particle positions, as well as velocity vectors for a kind of
+quiver plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X: numpy.array</strong></dt><dd><p><code class="docutils literal notranslate"><span class="pre">n</span></code> by 2 array containing in each “row” the current 2d positions of
+one of the <code class="docutils literal notranslate"><span class="pre">n</span></code> particles in the system</p>
+</dd>
+<dt><strong>V: numpy.array</strong></dt><dd><p><code class="docutils literal notranslate"><span class="pre">n</span></code> by 2 array containing in each “row” the current 2d velocity
+vectors of one of the <code class="docutils literal notranslate"><span class="pre">n</span></code> particles in the system</p>
+</dd>
+<dt><strong>vscale: float</strong></dt><dd><p>factor by which velocity vectors will be stretched in
+visualization, for better visibility.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>dict</dt><dd><p>containing data for ColumnDataSource, with fields <code class="docutils literal notranslate"><span class="pre">x1,</span> <span class="pre">x2</span></code>
+(positions), <code class="docutils literal notranslate"><span class="pre">x1s,</span> <span class="pre">x2s</span></code> (start and end coordinates of velocity
+vectors).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="swarming.model.Model.evolve">
 <span class="sig-name descname"><span class="pre">evolve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snapshot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.Model.evolve" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Get parameters for right hand side, get a right hand side for this
+parameter set and calculate a certain amount of time steps with it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>time_step: float</strong></dt><dd><p>time step size to compute</p>
+</dd>
+<dt><strong>n_steps: int</strong></dt><dd><p>number of time steps to calculate</p>
+</dd>
+<dt><strong>snapshot: bool</strong></dt><dd><p>wether or not to record the particle positions and velocities into
+the system history after calculating for <code class="docutils literal notranslate"><span class="pre">n_steps</span></code> time steps.</p>
+</dd>
+<dt><strong>kwargs: dict</strong></dt><dd><p>parameters for right hand side function</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><a class="reference internal" href="#swarming.model.Model" title="swarming.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">swarming.model.Model</span></code></a></dt><dd><p>reference to class instance to allow for command chaining.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="swarming.model.Model.history">
@@ -662,37 +860,188 @@ system.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="swarming.model.Model.plot">
 <span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.Model.plot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Plot all particles with velocity vectors from current system state. Uses <code class="docutils literal notranslate"><span class="pre">self.cds</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>plot_width: int</strong></dt><dd><p>plot width in pixels</p>
+</dd>
+<dt><strong>plot_height: int</strong></dt><dd><p>plot height in pixels</p>
+</dd>
+<dt><strong>plot_mean: bool</strong></dt><dd><p>mark the systems mean position and velocity vector or not.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>bokeh.plotting.figure</dt><dd><p>to be displayed with <code class="docutils literal notranslate"><span class="pre">show</span></code> or inserted into a layout.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="swarming.model.Model.plot_density">
-<span class="sig-name descname"><span class="pre">plot_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ncols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">palette</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Viridis256'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.Model.plot_density" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">plot_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">palette</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Viridis256'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.Model.plot_density" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot particle density from current system state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>plot_width: int</strong></dt><dd><p>plot width in pixels</p>
+</dd>
+<dt><strong>plot_height: int</strong></dt><dd><p>plot height in pixels</p>
+</dd>
+<dt><strong>palette: str or bokeh palette</strong></dt><dd><p>color palette or name of color palette to use</p>
+</dd>
+<dt><strong>size: float</strong></dt><dd><p>determines the size of hexagonal histogram cells in plot
+coordinates.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>bokeh.plotting.figure</dt><dd><p>to be displayed with <code class="docutils literal notranslate"><span class="pre">show</span></code> or inserted into a layout.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="swarming.model.Model.plot_trajectory">
 <span class="sig-name descname"><span class="pre">plot_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.Model.plot_trajectory" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Plots the trajectory of the mean position and mean velocity of the
+whole system over time, recorded so far-</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>plot_width: int</strong></dt><dd><p>plot width in pixels</p>
+</dd>
+<dt><strong>plot_height: int</strong></dt><dd><p>plot height in pixels</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>bokeh.plotting.figure</dt><dd><p>to be displayed with <code class="docutils literal notranslate"><span class="pre">show</span></code> or inserted into a layout.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="swarming.model.Model.record_for_time">
 <span class="sig-name descname"><span class="pre">record_for_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.Model.record_for_time" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Wrapper for <a class="reference internal" href="#swarming.model.Model.evolve" title="swarming.model.Model.evolve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">swarming.model.Model.evolve()</span></code></a> to run batches of
+timesteps, until a certain maximum simulation time is reached,
+recording intermediate states into system history.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>max_time: float</strong></dt><dd><p>maximum simulation time for which to compute. Adds to
+<code class="docutils literal notranslate"><span class="pre">self.time</span></code>, so if <code class="docutils literal notranslate"><span class="pre">self.time</span> <span class="pre">=</span> <span class="pre">10</span></code> and
+<code class="docutils literal notranslate"><span class="pre">max_time</span> <span class="pre">=</span> <span class="pre">20</span></code> is given, <code class="docutils literal notranslate"><span class="pre">self.time</span></code> will be 30 in the end.</p>
+</dd>
+<dt><strong>time_step: float</strong></dt><dd><p>time step size to compute</p>
+</dd>
+<dt><strong>n_steps: int</strong></dt><dd><p>number of time steps to calculate for each recorded system state</p>
+</dd>
+<dt><strong>kwargs: dict</strong></dt><dd><p>parameters for right hand side function</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><a class="reference internal" href="#swarming.model.Model" title="swarming.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">swarming.model.Model</span></code></a></dt><dd><p>reference to class instance to allow for command chaining.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="swarming.model.Model.record_until">
 <span class="sig-name descname"><span class="pre">record_until</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lookback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.Model.record_until" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Wrapper for <a class="reference internal" href="#swarming.model.Model.evolve" title="swarming.model.Model.evolve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">swarming.model.Model.evolve()</span></code></a> to run batches of
+timesteps, until a maximum number of time steps has been reached,
+recording intermediate states into system history.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>max_steps: int</strong></dt><dd><p>maximum simulation steps to perform for one call of this function</p>
+</dd>
+<dt><strong>time_step: float</strong></dt><dd><p>time step size to compute</p>
+</dd>
+<dt><strong>n_steps: int</strong></dt><dd><p>number of time steps to calculate for each recorded system state</p>
+</dd>
+<dt><strong>lookback: int</strong></dt><dd><p>amount of previous time steps to take into account for not yet
+implemented stopping criterion</p>
+</dd>
+<dt><strong>tolx: float</strong></dt><dd><p>tolerance in position to take into account for not yet
+implemented stopping criterion</p>
+</dd>
+<dt><strong>tolv: float</strong></dt><dd><p>tolerance in velocity to take into account for not yet
+implemented stopping criterion</p>
+</dd>
+<dt><strong>kwargs: dict</strong></dt><dd><p>parameters for right hand side function</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><a class="reference internal" href="#swarming.model.Model" title="swarming.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">swarming.model.Model</span></code></a></dt><dd><p>reference to class instance to allow for command chaining.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="swarming.model.Model.step">
 <span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.Model.step" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Computes one time step with explicit Runge-Kutta method of 2nd order.
+By giving a noise parameter larger zero, this becomes an Ito-scheme
+for stochastic differential equations. As a user, normally you call
+either the <a class="reference internal" href="#swarming.model.Model.evolve" title="swarming.model.Model.evolve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">swarming.model.Model.evolve()</span></code></a>,
+<a class="reference internal" href="#swarming.model.Model.record_until" title="swarming.model.Model.record_until"><code class="xref py py-meth docutils literal notranslate"><span class="pre">swarming.model.Model.record_until()</span></code></a> or
+<a class="reference internal" href="#swarming.model.Model.record_for_time" title="swarming.model.Model.record_for_time"><code class="xref py py-meth docutils literal notranslate"><span class="pre">swarming.model.Model.record_for_time()</span></code></a> to advance the system
+by a defined number of time steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>time_step: float</strong></dt><dd><p>time step size to compute</p>
+</dd>
+<dt><strong>noise: float</strong></dt><dd><p>coefficient to apply an Ito diffusion to the system and turn it
+into a system of stochastic differential equations</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><a class="reference internal" href="#swarming.model.Model" title="swarming.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">swarming.model.Model</span></code></a></dt><dd><p>reference to class instance to allow for command chaining.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="swarming.model.Model.update_cds">
 <span class="sig-name descname"><span class="pre">update_cds</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#swarming.model.Model.update_cds" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Replaces the data dict of ColumnDataSource <code class="docutils literal notranslate"><span class="pre">self.cds</span></code> with current
+velocities and positions. If <code class="docutils literal notranslate"><span class="pre">self.cds</span></code> is attached as source to any
+bokeh figure, it will update, too.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><a class="reference internal" href="#swarming.model.Model" title="swarming.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">swarming.model.Model</span></code></a></dt><dd><p>reference to class instance to allow for command chaining.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
