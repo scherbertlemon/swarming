@@ -1,4 +1,9 @@
-from datetime import time
+"""
+Module containing most of the computation logic and the visualizations, using
+Bokeh and ``ColumnDataSource`` to allow for updating figures displaying the
+system.
+"""
+
 import numpy as np
 from numpy.random import rand, randn
 from bokeh.plotting import ColumnDataSource, figure
@@ -7,20 +12,86 @@ from bokeh.models import ColorBar, LinearColorMapper
 import pandas as pd
 
 
-def force_of_distance(r, Ca=20.0, Cr=50.0, la=100, lr=2, noise=0.0):
+def force_of_distance(r, Ca=20.0, Cr=50.0, la=100, lr=2):
+    """
+    Force function for swarm behavior for illustration purposes
+
+    Parameters
+    ----------
+    r: float, array
+        vector of distances for which to compute forces
+    Ca: float
+        attraction force
+    Cr: float
+        repulsion force
+    la: float
+        attraction range
+    lr: float
+        repulsion range
+
+    Returns
+    -------
+    numpy.array
+        array of forces the same size as r
+    """
     return Ca/la*np.exp(-r/la)-Cr/lr*np.exp(-r/lr)
 
 
 def harmonic_oscillator_rhs(const=0.01, damping=0.1, **kwargs):
+    """
+    Right hand side for particle system, modelling harmonic oscillator behavior.
+
+    Parameters
+    ----------
+    const: float
+        coefficient
+    damping: float
+        damping coefficient
+    
+    Returns
+    -------
+    function
+        the parameterized function to act as a right hand side for the system
+    """
     def apply_rhs(X, V):
-        return V, - const* X - damping * V
+        """
+        Parameterized function to apply on positions ``X`` and velocities ``V`` of the particle system.
+        """
+        return V, -const * X - damping * V
 
     return apply_rhs
 
 
 def rep_attr_rhs(alpha=0.07, beta=0.05, Ca=20.0, Cr=50.0, la=100, lr=2, noise=0.0, **kwargs):
+    """
+    Right hand side for particle system, modelling swarming behavior by balancing a repulsive and attractive force.
 
+    Parameters
+    ----------
+    alpha: float
+        propulsion coefficient
+    beta: float
+        breaking/damping coefficient
+    Ca: float
+        attraction force
+    Cr: float
+        repulsion force
+    la: float
+        attraction range
+    lr: float
+        repulsion range
+    noise: float
+        coefficient for random noise added to the motion of the system
+    
+    Returns
+    -------
+    function
+        the parameterized function to act as a right hand side for the system
+    """
     def apply_rhs(X, V):
+        """
+        Parameterized function to apply on positions ``X`` and velocities ``V`` of the particle system.
+        """
         def force(r):
             return Ca/la*np.exp(-r/la)-Cr/lr*np.exp(-r/lr)
 
