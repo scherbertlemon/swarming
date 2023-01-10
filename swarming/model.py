@@ -112,7 +112,69 @@ def rep_attr_rhs(alpha=0.07, beta=0.05, Ca=20.0, Cr=50.0, la=100, lr=2, noise=0.
 
 
 class Model:
+    """
+    Base class for simulating a system of potentially interacting particles,
+    as a system of ordinary differential equations in terms of particle
+    positions ``X`` and velocities ``V``. The system behavior is mainly
+    determined by the choice of the right hand side, which can be
+    parameterized with coefficients, and which is applied to positions and
+    velocities in every time step. There is further functionality to plot
+    current model states with bokeh, and to record the complete trajectories
+    of particles in the phase space.
 
+    Parameters
+    ----------
+    X: numpy.array
+        ``n`` by 2 array containing in each "row" the 2d positions of one of
+        the ``n`` particles to simulate. Can be an initial distribution or an
+        intermediate state. See also
+        :py:class:`swarming.model.InitialCondition`
+    V: numpy.array
+        ``n`` by 2 array containing in each "row" the 2d velocity vector of
+        one of the ``n`` particles to simulate.
+    rhs: function
+        function returning a reference to a parameterized right hand side to
+        be evaluated in every timestep for positions and velocities.
+
+    Attributes
+    ----------
+    X: numpy.array
+        ``n`` by 2 array containing in each "row" the current 2d positions of
+        one of the ``n`` particles in the system
+    V: numpy.array
+        ``n`` by 2 array containing in each "row" the current 2d velocity
+        vectors of one of the ``n`` particles in the system
+    time: float
+        current simulation time until which the model has been run since
+        instantiation.
+    rhs: function
+        function returning a reference to a parameterized right hand side to
+        be evaluated in every timestep for positions and velocities. Can be
+        changed during system evolution to modify parameters
+    apply_rhs: function
+        the return of ``rhs`` called with a set of parameters, to be applied
+        to particles and velocities in the simulation
+    VSCALE: float
+        factor by which velocity vecotrs are stretched for visualization only.
+    mean_x: numpy.array
+        2 array always containing the mean position of all particles at
+        current timestamp.
+    mean_v: numpy.array
+        2 array always containing the mean velocity of all particles at
+        current timestamp.
+    cds: bokeh.ColumnDataSource
+        reference to column data source that is used for plotting system state.
+        Can be updated with current simulated data by calling
+        :py:meth:`swarming.model.Model.update_cds`. Helpful for updating bokeh
+        plots that use this data source, e.g. in an interactive Bokeh app.
+    history: pandas.DataFrame
+        contains particle positions, velocities, mean position and velocity of
+        all particles at certain time steps, that are determined in
+        :py:meth:`swarming.model.record_for_time` or
+        :py:meth:`swarming.model.record_until`.
+    n_particles: int
+        amount of particles, i.e. number of rows of ``X``: ``self.X.shape[0]``
+    """
     def __init__(self, X, V, rhs=None):
         self.X = X
         self.V = V
@@ -129,6 +191,28 @@ class Model:
         self._cds = None
 
     def step(self, time_step, noise=0.0):
+        """
+        Computes one time step with explicit Runge-Kutta method of 2nd order.
+        By giving a noise parameter larger zero, this becomes an Ito-scheme
+        for stochastic differential equations. As a user, normally you call
+        either the :py:meth:`swarming.model.Model.evolve`,
+        :py:meth:`swarming.model.Model.record_until` or
+        :py:meth:`swarming.model.Model.record_for_time` to advance the system
+        by a defined number of time steps.
+
+        Parameters
+        ----------
+        time_step: float
+            time step size to compute
+        noise: float
+            coefficient to apply an Ito diffusion to the system and turn it
+            into a system of stochastic differential equations
+
+        Returns
+        -------
+        :py:class:`swarming.model.Model`
+            reference to class instance to allow for command chaining.
+        """
         rhsx, rhsv = self.apply_rhs(self.X, self.V)
         X_half = self.X + .5 * time_step * rhsx
         V_half = self.V + .5 * time_step * rhsv
@@ -144,6 +228,27 @@ class Model:
         return self
 
     def evolve(self, time_step, n_steps, snapshot=False, **kwargs):
+        """
+        Get parameters for right hand side, get a right hand side for this
+        parameter set and calculate a certain amount of time steps with it.
+
+        Parameters
+        ----------
+        time_step: float
+            time step size to compute
+        n_steps: int
+            number of time steps to calculate
+        snapshot: bool
+            wether or not to record the particle positions and velocities into
+            the system history after calculating for ``n_steps`` time steps.
+        kwargs: dict
+            parameters for right hand side function
+
+        Returns
+        -------
+        :py:class:`swarming.model.Model`
+            reference to class instance to allow for command chaining.
+        """
         if "noise" in kwargs.keys():
             noise = kwargs["noise"]
         else:
@@ -152,23 +257,49 @@ class Model:
         self.apply_rhs = self.rhs(**kwargs)
         for i in range(0, n_steps):
             self.step(time_step, noise=noise)
-        
+
         if snapshot:
             self.add_history()
 
         return self
 
     def add_history(self):
+        """
+        Appends current simulation time, positions, velocities and mean
+        positions and velocities into system history.
+        """
         self._history.append(
             (self.time, self.X[:, 0], self.X[:, 1], self.V[:, 0], self.V[:, 1], self.mean_x, self.mean_v)
         )
-        
-    
+
     @property
     def history(self):
         return pd.DataFrame(self._history, columns=["time", "X1", "X2", "V1", "V2", "mean_x", "mean_v"])
 
     def record_for_time(self, max_time, time_step, n_steps, **kwargs):
+        """
+        Wrapper for :py:meth:`swarming.model.Model.evolve` to run batches of
+        timesteps, until a certain maximum simulation time is reached,
+        recording intermediate states into system history.
+
+        Parameters
+        ----------
+        max_time: float
+            maximum simulation time for which to compute. Adds to
+            ``self.time``, so if ``self.time = 10`` and
+            ``max_time = 20`` is given, ``self.time`` will be 30 in the end.
+        time_step: float
+            time step size to compute
+        n_steps: int
+            number of time steps to calculate for each recorded system state
+        kwargs: dict
+            parameters for right hand side function
+
+        Returns
+        -------
+        :py:class:`swarming.model.Model`
+            reference to class instance to allow for command chaining.
+        """
         t = 0.0
         while t < max_time:
             self.evolve(time_step, n_steps, snapshot=True, **kwargs)
@@ -177,6 +308,26 @@ class Model:
         return self
 
     def calc_chg_from_history(self, lookback=None):
+        """
+        For the recorded mean positions and velocities, calculate modulus of
+        discrete change rates over time. Corresponds to modulus of discrete
+        first derivatives of ``mean_x``, ``mean_v``
+
+        Parameters
+        ----------
+        lookback: int
+            Maximum amount of time points from history to take into account. If not
+            given, use all.
+
+        Returns
+        -------
+        chgx: numpy.array
+            ``lookback`` sized array of mean position change rates
+        chgv: numpy.array
+            ``lookback`` sized array of mean velocity change rates
+        time: numpy.array
+            the timepoints for which change rates where calculated
+        """
         if lookback is None or lookback > len(self._history):
             lookback = len(self._history)
         tim = self.history["time"].to_numpy()
@@ -198,6 +349,41 @@ class Model:
         tolv=1.e-2,
         **kwargs
     ):
+        """
+        Wrapper for :py:meth:`swarming.model.Model.evolve` to run batches of
+        timesteps, until a maximum number of time steps has been reached,
+        recording intermediate states into system history.
+
+        Note
+        ----
+        It was intended to implement a stopping criterion involving mean
+        velocities and position, but this is left as a future exercise :-)
+
+        Parameters
+        ----------
+        max_steps: int
+            maximum simulation steps to perform for one call of this function
+        time_step: float
+            time step size to compute
+        n_steps: int
+            number of time steps to calculate for each recorded system state
+        lookback: int
+            amount of previous time steps to take into account for not yet
+            implemented stopping criterion
+        tolx: float
+            tolerance in position to take into account for not yet
+            implemented stopping criterion
+        tolv: float
+            tolerance in velocity to take into account for not yet
+            implemented stopping criterion
+        kwargs: dict
+            parameters for right hand side function
+
+        Returns
+        -------
+        :py:class:`swarming.model.Model`
+            reference to class instance to allow for command chaining.
+        """
         
         indx = tolx + 1
         indv = tolv + 1
@@ -230,14 +416,58 @@ class Model:
         return self._cds
 
     def update_cds(self):
+        """
+        Replaces the data dict of ColumnDataSource ``self.cds`` with current
+        velocities and positions. If ``self.cds`` is attached as source to any
+        bokeh figure, it will update, too.
+
+        Returns
+        -------
+        :py:class:`swarming.model.Model`
+            reference to class instance to allow for command chaining.
+        """
         self._cds.data = self.cds_dict()
         return self
 
     def cds_dict(self):
+        """
+        Creates a data dictionary to insert into ColumnDataSource for current system state.
+        See also :py:meth:`swarming.model.Model.cds_static`.
+
+        Returns
+        -------
+        dict
+            containing data for ColumnDataSource
+        """
         return self.cds_static(self.X, self.V, vscale=self.VSCALE)
 
     @staticmethod
     def cds_static(X, V, vscale=1.0):
+        """
+        For given positions and velocities, create a dictionary that can be
+        inserted into a bokeh ``ColumnDataSource``, providing data for
+        plotting particle positions, as well as velocity vectors for a kind of
+        quiver plot.
+
+        Parameters
+        ----------
+        X: numpy.array
+            ``n`` by 2 array containing in each "row" the current 2d positions of
+            one of the ``n`` particles in the system
+        V: numpy.array
+            ``n`` by 2 array containing in each "row" the current 2d velocity
+            vectors of one of the ``n`` particles in the system
+        vscale: float
+            factor by which velocity vectors will be stretched in
+            visualization, for better visibility.
+
+        Returns
+        -------
+        dict
+            containing data for ColumnDataSource, with fields ``x1, x2``
+            (positions), ``x1s, x2s`` (start and end coordinates of velocity
+            vectors).
+        """
         return dict(
             x1=X[:, 0],
             x2=X[:, 1],
@@ -246,6 +476,24 @@ class Model:
         )
 
     def plot(self, plot_width=500, plot_height=500, plot_mean=False):
+        """
+        Plot all particles with velocity vectors from current system state. Uses ``self.cds``.
+
+        Parameters
+        ----------
+        plot_width: int
+            plot width in pixels
+        plot_height: int
+            plot height in pixels
+        plot_mean: bool
+            mark the systems mean position and velocity vector or not.
+
+        Returns
+        -------
+        bokeh.plotting.figure
+            to be displayed with ``show`` or inserted into a layout.
+        """
+
         f = figure(title="current state", plot_width=plot_width, plot_height=plot_height, match_aspect=True)
         f.circle(source=self.cds, x="x1", y="x2", size=13, fill_alpha=0.5)
         f.multi_line(source=self.cds, xs="x1s", ys="x2s", line_width=2)
@@ -262,8 +510,27 @@ class Model:
             )
         return f
 
-    def plot_density(self, ncols=2, plot_width=500, plot_height=400, palette="Viridis256", size=1):
-        
+    def plot_density(self, plot_width=500, plot_height=400, palette="Viridis256", size=1):
+        """
+        Plot particle density from current system state.
+
+        Parameters
+        ----------
+        plot_width: int
+            plot width in pixels
+        plot_height: int
+            plot height in pixels
+        palette: str or bokeh palette
+            color palette or name of color palette to use
+        size: float
+            determines the size of hexagonal histogram cells in plot
+            coordinates. 
+
+        Returns
+        -------
+        bokeh.plotting.figure
+            to be displayed with ``show`` or inserted into a layout.
+        """
         f = figure(title="Density plot", plot_width=plot_width, plot_height=plot_height, match_aspect=True)
         _, counts = f.hexbin(x=self.X[:, 0], y=self.X[:, 1], size=size, palette=palette)
         colmapper = LinearColorMapper(low=counts["counts"].min(), high=counts["counts"].max(), palette=palette)
@@ -276,7 +543,22 @@ class Model:
         return f
 
     def plot_trajectory(self, plot_width=300, plot_height=300):
+        """
+        Plots the trajectory of the mean position and mean velocity of the
+        whole system over time, recorded so far-
 
+        Parameters
+        ----------
+        plot_width: int
+            plot width in pixels
+        plot_height: int
+            plot height in pixels
+
+        Returns
+        -------
+        bokeh.plotting.figure
+            to be displayed with ``show`` or inserted into a layout.
+        """
         x = np.stack(self.history["mean_x"], axis=0)
         v = np.stack(self.history["mean_v"], axis=0)
 
@@ -292,7 +574,48 @@ class Model:
 
 
 class InitialCondition(Model):
-    
+    """
+    Subclass to prepare a system of interacting particles in a defined initial
+    state or to reset it to one.
+    Is based on :py:class:`swarming.model.Model`.
+
+    Parameters
+    ----------
+    condition: str
+        name of the initial condition to create. Must be a property name of
+        this class
+    n_particles: int
+        number of particles to generate
+    x_range: tuple
+        x range where to distribute particles
+    y_range: tuple
+        y range where to distribute particles
+    rhs: function
+        function reference for right hand side for system, see
+        :py:class:`swarming.model.Model`.
+
+    Attributes
+    ----------
+    n: int
+        given number of particles. Is effective when setting initial condition
+    xr: tuple
+        x range where to distribute particles
+    yr: tuple
+        y range where to distribute particles
+    distx: float
+        length of x range
+    disty: float
+        length of y range
+    circular: tuple of np.array
+        positions and velocities of a donut-shaped distribution of particles
+    square: tuple of np.array
+        positions and velocities of a square-shaped distribution of particles,
+        all velocities aligned into one direction
+    randomspeed: tuple of np.array
+        like "square" with random velocity vectors
+    nospeed: tuple of np.array
+        like "square", with zero velocity vectors
+    """
     def __init__(self, condition="circular", n_particles=100, x_range=(-40, 40), y_range=(-40, 40), rhs=None):
         self.n = n_particles
         self.xr = x_range
@@ -336,10 +659,40 @@ class InitialCondition(Model):
         return X, 10. * (rand(*V.shape)-0.5)
 
     def set_initial(self, condition="circular"):
+        """
+        Prepare system in defined condition. Resets particle positions and
+        velocities imminently.
+
+        Returns
+        -------
+        :py:class:`swarming.model.Model`
+            reference to class instance to allow for command chaining.
+        """
         self.X, self.V = getattr(self, condition)
         return self
 
     def plot_initial(self, ncols=3, attrs=None, plot_width=300, plot_height=300):
+        """
+        Plot all registered initial conditions as an example. Does not change
+        system state.
+
+        Parameters
+        ----------
+        ncols: int
+            number of columsn for grid plot of initial conditions
+        attrs: list of str
+            list of names of initial conditions to plot. All conditions are 
+            lotted by default.
+        plot_width: int
+            plot width for each subfigure in pixels
+        plot_height: int
+            plot height for each subfigure in pixels
+
+        Returns
+        -------
+        bokeh.layouts.grid
+            grid of figures containing selected initial conditions.
+        """
         if attrs is None:
             attrs = ["circular", "square", "nospeed", "randomspeed"]
 
