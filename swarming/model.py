@@ -3,6 +3,7 @@ import numpy as np
 from numpy.random import rand, randn
 from bokeh.plotting import ColumnDataSource, figure
 from bokeh.layouts import grid
+from bokeh.models import ColorBar, LinearColorMapper
 import pandas as pd
 
 
@@ -10,7 +11,11 @@ def linear_movement(X, V):
     return V, np.zeros(V.shape)
 
 
-def rep_attr_rhs(alpha=0.07, beta=0.05, Ca=20.0, Cr=50.0, la=100, lr=2):
+def force_of_distance(r, Ca=20.0, Cr=50.0, la=100, lr=2, noise=0.0):
+    return Ca/la*np.exp(-r/la)-Cr/lr*np.exp(-r/lr)
+
+
+def rep_attr_rhs(alpha=0.07, beta=0.05, Ca=20.0, Cr=50.0, la=100, lr=2, noise=0.0):
 
     def apply_rhs(X, V):
         def force(r):
@@ -25,7 +30,7 @@ def rep_attr_rhs(alpha=0.07, beta=0.05, Ca=20.0, Cr=50.0, la=100, lr=2):
         rhsv = V*(alpha - beta * (V**2 + np.flip(V, axis=1)**2)) - np.stack((
             np.sum(force(normdi)/((np.abs(normdi-0)<1e-14).astype(int) +normdi)*distx1, axis=0),
             np.sum(force(normdi)/((np.abs(normdi-0)<1e-14).astype(int) +normdi)*distx2, axis=0)
-        )).T/X.shape[0]
+        )).T/X.shape[0] - 0.5 * noise**2 * V
         
         return V, rhsv
     
@@ -48,14 +53,14 @@ class Model:
         self.add_history()
         self._cds = None
 
-    def step(self, time_step):
+    def step(self, time_step, noise=0.0):
         rhsx, rhsv = self.rhs(self.X, self.V)
         X_half = self.X + .5 * time_step * rhsx
         V_half = self.V + .5 * time_step * rhsv
 
         rhsx, rhsv = self.rhs(X_half, V_half)
         X = self.X + time_step * rhsx
-        V = self.V + time_step * rhsv
+        V = self.V + time_step * rhsv + np.sqrt(time_step) * noise * randn(self.X.shape[0], self.X.shape[1])
 
         # if update:
         self.X = X
@@ -64,10 +69,14 @@ class Model:
         return self
 
     def evolve(self, time_step, n_steps, snapshot=False, **kwargs):
+        if "noise" in kwargs.keys():
+            noise = kwargs["noise"]
+        else:
+            noise = 0.0
 
         self.rhs = rep_attr_rhs(**kwargs)
         for i in range(0, n_steps):
-            self.step(time_step)
+            self.step(time_step, noise=noise)
         
         if snapshot:
             self.add_history()
@@ -76,19 +85,21 @@ class Model:
 
     def add_history(self):
         self._history.append(
-            (self.time, self.X, self.V, self.mean_x, self.mean_v)
+            (self.time, self.X[:, 0], self.X[:, 1], self.V[:, 0], self.V[:, 1], self.mean_x, self.mean_v)
         )
         
     
     @property
     def history(self):
-        return pd.DataFrame(self._history, columns=["time", "X", "V", "mean_x", "mean_v"])
+        return pd.DataFrame(self._history, columns=["time", "X1", "X2", "V1", "V2", "mean_x", "mean_v"])
 
     def record_for_time(self, max_time, time_step, n_steps, **kwargs):
         t = 0.0
         while t < max_time:
             self.evolve(time_step, n_steps, snapshot=True, **kwargs)
             t += time_step * n_steps
+
+        return self
 
     def calc_chg_from_history(self, lookback=None):
         if lookback is None or lookback > len(self._history):
@@ -123,6 +134,7 @@ class Model:
             indv = chgv.mean()
             count += 1
 
+        return self
 
     @property
     def n_particles(self):
@@ -142,6 +154,10 @@ class Model:
             self._cds = ColumnDataSource(data=self.cds_dict())
         return self._cds
 
+    def update_cds(self):
+        self._cds.data = self.cds_dict()
+        return self
+
     def cds_dict(self):
         return self.cds_static(self.X, self.V, vscale=self.VSCALE)
 
@@ -154,10 +170,10 @@ class Model:
             x2s=list(np.stack((X[:, 1], X[:, 1] + vscale * V[:, 1]), axis=1))
         )
 
-    def plot(self, plot_width=300, plot_height=300, plot_mean=False):
+    def plot(self, plot_width=500, plot_height=500, plot_mean=False):
         f = figure(title="current state", plot_width=plot_width, plot_height=plot_height, match_aspect=True)
-        f.circle(source=self.cds, x="x1", y="x2")
-        f.multi_line(source=self.cds, xs="x1s", ys="x2s")
+        f.circle(source=self.cds, x="x1", y="x2", size=13, fill_alpha=0.5)
+        f.multi_line(source=self.cds, xs="x1s", ys="x2s", line_width=2)
 
         if plot_mean:
             mx = self.mean_x
@@ -169,6 +185,19 @@ class Model:
                 line_width=3,
                 color="green"
             )
+        return f
+
+    def plot_density(self, ncols=2, plot_width=500, plot_height=400, palette="Viridis256", size=1):
+        
+        f = figure(title="Density plot", plot_width=plot_width, plot_height=plot_height, match_aspect=True)
+        _, counts = f.hexbin(x=self.X[:, 0], y=self.X[:, 1], size=size, palette=palette)
+        colmapper = LinearColorMapper(low=counts["counts"].min(), high=counts["counts"].max(), palette=palette)
+        colorbar = ColorBar(color_mapper=colmapper)
+        f.background_fill_color = colmapper.palette[0]
+        f.grid.visible = False
+
+        f.add_layout(colorbar, "right")
+
         return f
 
     def plot_trajectory(self, plot_width=300, plot_height=300):
@@ -233,6 +262,7 @@ class InitialCondition(Model):
 
     def set_initial(self, condition="circular"):
         self.X, self.V = getattr(self, condition)
+        return self
 
     def plot_initial(self, ncols=3, attrs=None, plot_width=300, plot_height=300):
         if attrs is None:

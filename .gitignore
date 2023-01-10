@@ -3,3 +3,6 @@
 .vscode
 .ipynb_checkpoints
 dask-worker-space
+*.parq
+*.kra
+*.*~
