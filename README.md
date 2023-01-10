@@ -1,5 +1,16 @@
 # Simulation package for interacting particle systems
 
+## Setup
+
+Provide a python environment with ``python > 3.7``, then run in the cloned repository folder:
+
+    pip install -e .
+
+On Windows, it is recommended to install ``numpy, scipy, pandas, jupyter`` and ``pyarrow`` with conda, e.g. into a separate environment:
+
+    conda create -n swarm python=3.8 numpy scipy jupyter pandas pyarrow
+
+
 ## Literature
 
 The model investigated here is based on:
