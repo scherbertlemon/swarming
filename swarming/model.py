@@ -7,15 +7,18 @@ from bokeh.models import ColorBar, LinearColorMapper
 import pandas as pd
 
 
-def linear_movement(X, V):
-    return V, np.zeros(V.shape)
-
-
 def force_of_distance(r, Ca=20.0, Cr=50.0, la=100, lr=2, noise=0.0):
     return Ca/la*np.exp(-r/la)-Cr/lr*np.exp(-r/lr)
 
 
-def rep_attr_rhs(alpha=0.07, beta=0.05, Ca=20.0, Cr=50.0, la=100, lr=2, noise=0.0):
+def harmonic_oscillator_rhs(const=0.01, damping=0.1, **kwargs):
+    def apply_rhs(X, V):
+        return V, - const* X - damping * V
+
+    return apply_rhs
+
+
+def rep_attr_rhs(alpha=0.07, beta=0.05, Ca=20.0, Cr=50.0, la=100, lr=2, noise=0.0, **kwargs):
 
     def apply_rhs(X, V):
         def force(r):
@@ -46,19 +49,20 @@ class Model:
         if rhs:
             self.rhs = rhs
         else:
-            self.rhs = rep_attr_rhs()
+            self.rhs = rep_attr_rhs
 
+        self.apply_rhs = self.rhs()
         self.time = 0.0
         self._history = []
         self.add_history()
         self._cds = None
 
     def step(self, time_step, noise=0.0):
-        rhsx, rhsv = self.rhs(self.X, self.V)
+        rhsx, rhsv = self.apply_rhs(self.X, self.V)
         X_half = self.X + .5 * time_step * rhsx
         V_half = self.V + .5 * time_step * rhsv
 
-        rhsx, rhsv = self.rhs(X_half, V_half)
+        rhsx, rhsv = self.apply_rhs(X_half, V_half)
         X = self.X + time_step * rhsx
         V = self.V + time_step * rhsv + np.sqrt(time_step) * noise * randn(self.X.shape[0], self.X.shape[1])
 
@@ -74,7 +78,7 @@ class Model:
         else:
             noise = 0.0
 
-        self.rhs = rep_attr_rhs(**kwargs)
+        self.apply_rhs = self.rhs(**kwargs)
         for i in range(0, n_steps):
             self.step(time_step, noise=noise)
         
