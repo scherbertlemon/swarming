@@ -1,8 +1,8 @@
 from bokeh.io import curdoc
 from bokeh.plotting import figure, ColumnDataSource
 from time import sleep, time
-from bokeh.models import Slider, Dropdown
-from bokeh.layouts import column
+from bokeh.models import Slider, Dropdown, Toggle
+from bokeh.layouts import column, row
 import swarming
 from tornado import gen
 
@@ -46,6 +46,7 @@ for param, props in descriptor_params.items():
     props.append(Slider(start=props[1], end=props[2], value=props[0], step=props[3], title=props[4]))
     props[-1].on_change("value", slider_callback(param))
 
+sim_toggle = Toggle(label="Run simulation on/off", button_type="success")
 ini_cond = Dropdown(label="Initial condition", button_type="success", menu=[
     ("Donut", "circular"),
     ("Square, aligned velocity", "square"),
@@ -69,9 +70,10 @@ ini_cond.on_click(ini_cond_callback)
 @gen.coroutine
 def update():
     # start = time()
-    swarm[0].evolve(TIME_STEP, N_STEPS, **PARAMS).update_cds()
+    if sim_toggle.active:
+        swarm[0].evolve(TIME_STEP, N_STEPS, **PARAMS).update_cds()
     # end = time()
     # header.text = "{}ms".format((end-start)*1000.0)
 
 doc.add_periodic_callback(update, 50)
-doc.add_root(column([props[-1] for _, props in descriptor_params.items()] + [ini_cond, f]))
+doc.add_root(column([props[-1] for _, props in descriptor_params.items()] + [row(ini_cond, sim_toggle), f]))
